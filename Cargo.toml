@@ -3,4 +3,19 @@ name = "ML-KEM"
 version = "0.1.0"
 edition = "2024"
 
+[build]
+rustflags = ["-A non_snake_case dead_code unused_variables"]
+
 [dependencies]
+matrix = "0.22.0"
+ndarray = "0.16.1"
+ndarray-rand = "0.15.0"
+rand = "0.9.1"
+sha3 = "0.10.8"
+
+
+
+[lints.rust]
+unused = "allow"
+unused_braces = "allow"
+non_snake_case = "allow"
