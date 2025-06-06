@@ -24,7 +24,7 @@ pub fn RejNTTPoly(seed: &[Byte]) -> [u32 ; 256]
         };
     
     }
-
+    
     a_hat
 
 }
@@ -45,3 +45,7 @@ fn coeffFromThreeBytes(b0: Byte, b1: Byte, b2: Byte) -> Option<u32>
         None
     }
 }
+
+
+pub fn RejBoundedPoly()
+

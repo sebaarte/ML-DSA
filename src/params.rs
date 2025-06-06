@@ -12,3 +12,4 @@ pub const BETA: u8 = R * ETA;
 pub const OMEGA: u8 = 80;
 pub const CHALLENGE_ENTROPY: u8 = 192;
 pub const REPETITIONS: f32 = 4.25;
+pub const KL: usize = 16;
