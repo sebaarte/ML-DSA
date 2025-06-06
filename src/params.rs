@@ -1,12 +1,13 @@
 pub const Q: u32 = 8380417;
-pub const K: u8 = 4;
-pub const L: u8 = 4;
+pub const Q_i32: i32 = 8380417;
+pub const K: usize = 4;
+pub const L: usize = 4;
 pub const D: u8 = 13;
 pub const R: u8 = 39;
 pub const LAMBDA: u8 = 128;
 pub const GAMMA1: u32 = u32::pow(2, 17);
 pub const GAMMA2: u32 = (Q - 1) / 88;
-pub const ZETA: u32 = 1753;
+pub const ZETA: i32 = 1753;
 pub const ETA: u8 = 2;
 pub const BETA: u8 = R * ETA;
 pub const OMEGA: u8 = 80;
