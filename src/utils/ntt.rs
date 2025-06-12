@@ -1,5 +1,5 @@
 use crate::{
-    bytes::Bytes,
+    
     params::{ETA, Q, Q_i32, ZETA},
 };
 use bit_reverse::BitwiseReverse;
@@ -12,6 +12,9 @@ type Byte = u8;
 
 type OneDArray<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 1]>>;
 type TwoDArray<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 2]>>;
+
+
+
 
 pub fn RejNTTPoly(seed: &[Byte]) -> [i32; 256] {
     let mut j: usize = 0;

@@ -12,7 +12,11 @@ use simplelog::{Config, SimpleLogger, TermLogger};
 
 mod params;
 mod utils;
-type OneDArray<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 1]>>;
+mod operation_types;
+mod operation_traits;
+
+
+
 
 mod bytes;
 pub mod keygen;

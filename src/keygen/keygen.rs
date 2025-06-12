@@ -1,8 +1,9 @@
 use crate::{
-    bytes::Bytes, params::{self, K, KL, L}, utils::ntt::{NTT_inv, RejBoundedPoly, RejNTTPoly, NTT}
+    params::{self, K, KL, L},
+    utils::ntt::{NTT, NTT_inv, RejBoundedPoly, RejNTTPoly},
 };
 use log::{debug, error, info, log, trace};
-use ndarray::{arr2, Array, Array2, Array3, Shape};
+use ndarray::{Array, Array2, Array3, Shape, arr2};
 use ndarray_rand::{RandomExt, rand_distr::Standard};
 
 use sha3::{
@@ -10,14 +11,10 @@ use sha3::{
     digest::{ExtendableOutput, Update, XofReader},
 };
 
-
 type OneDArray<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 1]>>;
 type TwoDArray<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 2]>>;
 
-
 pub fn keygen_internal(seed: OneDArray<u8>) {
-
-    
     trace!("Entered key generation");
     let mut hasher = Shake256::default();
 
@@ -41,35 +38,28 @@ pub fn keygen_internal(seed: OneDArray<u8>) {
     // generate A and store it in NTT representation
     let mut A_hat = expand_A(p);
 
-
     let (mut s1, mut s2) = expand_S(p_prime);
 
-    let mut t = NTT_inv(A_hat * NTT(s1)) + s2;
-
-
-
-    
-    
-
+    //let mut t = NTT_inv(A_hat * NTT(s1)) + s2;
 }
 
-fn expand_A(seed: [u8; 4]) -> TwoDArray<i32 >{
+fn expand_A(seed: [u8; 4]) -> TwoDArray<i32> {
     trace!("Entered expand A");
     let mut p_prime = [0u8; 6];
     let mut A_hat = [[0i32; 256]; KL];
     for r in 0..K - 1 {
         for s in 0..L - 1 {
-            p_prime = [&seed[..], &[r.try_into().unwrap()], &[s.try_into().unwrap()]].concat().try_into().unwrap();
+            p_prime[0..4].copy_from_slice(&seed);
+            p_prime[8..10].copy_from_slice(&r.to_be_bytes()[6..8]);
             A_hat[usize::from(r) * usize::from(K) + usize::from(s)] = RejNTTPoly(&p_prime);
         }
     }
     let res = arr2(&A_hat);
 
-
     res
 }
 
-fn expand_S(seed: [u8; 8]) -> (TwoDArray<i32 >, TwoDArray<i32 >) {
+fn expand_S(seed: [u8; 8]) -> (TwoDArray<i32>, TwoDArray<i32>) {
     trace!("Entered expand S");
     let mut s1 = [[0i32; 256]; L];
     let mut s2 = [[0i32; 256]; K];
@@ -80,7 +70,7 @@ fn expand_S(seed: [u8; 8]) -> (TwoDArray<i32 >, TwoDArray<i32 >) {
         s1[r] = RejBoundedPoly(&p_prime);
     }
 
-    for r in 0..(K-1) {
+    for r in 0..(K - 1) {
         p_prime[0..8].copy_from_slice(&seed);
         p_prime[8..10].copy_from_slice(&r.to_be_bytes()[6..8]);
         s2[r] = RejBoundedPoly(&p_prime);

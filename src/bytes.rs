@@ -1,15 +1,11 @@
-pub struct Bytes<'a>(pub &'a [u8]);
 
-impl<'a> std::fmt::Binary for Bytes<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[")?;
-        for byte in self.0 {
-            std::fmt::Binary::fmt(byte, f)?;
-            write!(f, ",")?;
-        }
-        writeln!(f, "]")?;
-        Ok(())
-    }
-}
+
+type ByteArray<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 1]>>;
+
+
+
+
+
+type ByteMatrix<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 2]>>;
 
 
