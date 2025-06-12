@@ -1,8 +1,8 @@
 use crate::{
-    bytes::Bytes, params::{self, K, KL, L}, utils::ntt::{NTT_inv, RejBoundedPoly, RejNTTPoly}
+    bytes::Bytes, params::{self, K, KL, L}, utils::ntt::{NTT_inv, RejBoundedPoly, RejNTTPoly, NTT}
 };
 use log::{debug, error, info, log, trace};
-use ndarray::{Array, Array3};
+use ndarray::{arr2, Array, Array2, Array3, Shape};
 use ndarray_rand::{RandomExt, rand_distr::Standard};
 
 use sha3::{
@@ -12,12 +12,16 @@ use sha3::{
 
 
 type OneDArray<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 1]>>;
+type TwoDArray<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 2]>>;
+
 
 pub fn keygen_internal(seed: OneDArray<u8>) {
 
     
     trace!("Entered key generation");
     let mut hasher = Shake256::default();
+
+    // compute H(seed||k||l) to expand seed
     hasher.update(seed.as_slice().unwrap());
     hasher.update(&params::K.to_be_bytes());
     hasher.update(&params::L.to_be_bytes());
@@ -34,15 +38,23 @@ pub fn keygen_internal(seed: OneDArray<u8>) {
 
     //println!("{:.4}", Array::<u32, _>::random((usize::from(K), usize::from(L)), Standard));
 
+    // generate A and store it in NTT representation
     let mut A_hat = expand_A(p);
+
+
     let (mut s1, mut s2) = expand_S(p_prime);
+
+    let mut t = NTT_inv(A_hat * NTT(s1)) + s2;
+
+
 
     
     
 
 }
 
-fn expand_A(seed: [u8; 4]) -> [[i32; 256]; KL] {
+fn expand_A(seed: [u8; 4]) -> TwoDArray<i32 >{
+    trace!("Entered expand A");
     let mut p_prime = [0u8; 6];
     let mut A_hat = [[0i32; 256]; KL];
     for r in 0..K - 1 {
@@ -51,21 +63,27 @@ fn expand_A(seed: [u8; 4]) -> [[i32; 256]; KL] {
             A_hat[usize::from(r) * usize::from(K) + usize::from(s)] = RejNTTPoly(&p_prime);
         }
     }
-    A_hat
+    let res = arr2(&A_hat);
+
+
+    res
 }
 
-fn expand_S(seed: [u8; 8]) -> ([[i32; 256]; L], [[i32; 256]; K]) {
+fn expand_S(seed: [u8; 8]) -> (TwoDArray<i32 >, TwoDArray<i32 >) {
+    trace!("Entered expand S");
     let mut s1 = [[0i32; 256]; L];
     let mut s2 = [[0i32; 256]; K];
     let mut p_prime = [0u8; 10];
-    for r in 0..L - 1 {
-        p_prime = [&seed[..], &[r.try_into().unwrap()]].concat().try_into().unwrap();
+    for r in 0..(L - 1) {
+        p_prime[0..8].copy_from_slice(&seed);
+        p_prime[8..10].copy_from_slice(&r.to_be_bytes()[6..8]);
         s1[r] = RejBoundedPoly(&p_prime);
     }
 
-    for r in 0..K-1 {
-        p_prime = [&seed[..], &[r.try_into().unwrap()]].concat().try_into().unwrap();
+    for r in 0..(K-1) {
+        p_prime[0..8].copy_from_slice(&seed);
+        p_prime[8..10].copy_from_slice(&r.to_be_bytes()[6..8]);
         s2[r] = RejBoundedPoly(&p_prime);
     }
-    (s1, s2)
+    (arr2(&s1), arr2(&s2))
 }

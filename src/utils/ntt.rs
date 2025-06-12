@@ -3,11 +3,15 @@ use crate::{
     params::{ETA, Q, Q_i32, ZETA},
 };
 use bit_reverse::BitwiseReverse;
+use log::trace;
 use ndarray_rand::rand_distr::Zeta;
 use sha3::{
     digest::{ExtendableOutput, Update, XofReader}, Shake128, Shake256
 };
 type Byte = u8;
+
+type OneDArray<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 1]>>;
+type TwoDArray<T> = ndarray::ArrayBase<ndarray::OwnedRepr<T>, ndarray::Dim<[usize; 2]>>;
 
 pub fn RejNTTPoly(seed: &[Byte]) -> [i32; 256] {
     let mut j: usize = 0;
@@ -42,7 +46,10 @@ fn coeffFromThreeBytes(b0: Byte, b1: Byte, b2: Byte) -> Option<u32> {
     if z < Q { Some(z) } else { None }
 }
 
+
+
 pub fn RejBoundedPoly(seed: &[Byte]) -> [i32; 256] {
+    //trace!("Entered RejBoundedPoly");
     let mut j: usize = 0;
     let mut hasher = Shake128::default();
     let mut a: [i32; 256] = [0i32; 256];
@@ -50,12 +57,12 @@ pub fn RejBoundedPoly(seed: &[Byte]) -> [i32; 256] {
     let mut tmp: Option<u32>;
     hasher.update(&seed);
     let mut reader: sha3::digest::core_api::XofReaderCoreWrapper<sha3::Shake128ReaderCore>;
-    let mut res = [0u8; 4];
+    let mut res = [0u8; 1];
     while j < 256 {
         reader = hasher.clone().finalize_xof();
         reader.read(&mut res);
-        let mut z0 = CoeffFromHalfByte((u32::from_be_bytes(res) % 16).try_into().unwrap());
-        let mut z1 = CoeffFromHalfByte((u32::from_be_bytes(res) / 16).try_into().unwrap());
+        let mut z0 = CoeffFromHalfByte((u8::from_be_bytes(res) % 16));
+        let mut z1 = CoeffFromHalfByte((u8::from_be_bytes(res) / 16).try_into().unwrap());
         if let Some(x) = z0 {
             a[j] = x.try_into().unwrap();
             j += 1;
